@@ -1,0 +1,42 @@
+[
+  {
+    "registerName": "Nguyễn Thanh Hải",
+    "registerEmail": "contact@palat.io.vn",
+    "sdt": "0904548362",
+    "address": "Biên Hòa",
+    "registerPassword": "1234",
+    "registerPasswordConfirm": "1234"
+  },
+  {
+    "registerName": "TEST 2",
+    "registerEmail": "contacttest@palat.dev",
+    "sdt": "43667432",
+    "address": "no",
+    "registerPassword": "1234",
+    "registerPasswordConfirm": "1234"
+  },
+  {
+    "registerName": "Xernes",
+    "registerEmail": "baohqtb01689@gmail.com",
+    "sdt": "0386293374",
+    "address": "Mars",
+    "registerPassword": "12345678",
+    "registerPasswordConfirm": "12345678"
+  },
+  {
+    "registerName": "ac",
+    "registerEmail": "quantmtb01641@gnail.com",
+    "sdt": "ác",
+    "address": "sac",
+    "registerPassword": "conmaquan",
+    "registerPasswordConfirm": "conmaquan"
+  },
+  {
+    "registerName": "conmaquan",
+    "registerEmail": "quanmhello@gmail.com",
+    "sdt": "124",
+    "address": "12",
+    "registerPassword": "conmaquan",
+    "registerPasswordConfirm": "conmaquan"
+  }
+]
