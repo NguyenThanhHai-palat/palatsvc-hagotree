@@ -1,0 +1,47 @@
+[
+  {
+    "id": "sp1",
+    "title": "Sản phẩm 1",
+    "content": "Đây là mô tả chi tiết về sản phẩm 1. Sản phẩm chất lượng cao, phù hợp với nhu cầu của bạn.",
+    "cost": "120000",
+    "image": "/image/1749803434022.jpeg",
+    "createdAt": "2025-06-13T08:30:34.026Z",
+    "tag_product": "caycanhnhantao"
+  },
+  {
+    "id": "sp2",
+    "title": "Sản phẩm 2",
+    "content": "Mô tả chi tiết về sản phẩm 2. Thiết kế đẹp, chất liệu bền.",
+    "cost": "150000",
+    "image": "/image/1749805458693.jpeg",
+    "tag_product": "caycanhnhantao",
+    "createdAt": "2025-06-13T09:04:18.697Z"
+  },
+  {
+    "id": "sp3",
+    "title": "Sản phẩm 3",
+    "content": "Sản phẩm 3 với nhiều tính năng ưu việt, giá trị vượt trội.",
+    "cost": "200000",
+    "image": "/image/1749806636608.jpeg",
+    "tag_product": "caycanhnhantao",
+    "createdAt": "2025-06-13T09:23:56.668Z"
+  },
+  {
+    "id": "sp4",
+    "title": "Chậu 1",
+    "content": "Sản phẩm chậu 1 phù hợp với mọi nhu cầu, giá cả phải chăng.",
+    "cost": "100000",
+    "image": "/image/1749807097308.jpeg",
+    "tag_product": "chaucay",
+    "createdAt": "2025-06-13T09:31:37.309Z"
+  },
+  {
+    "id": "sp5",
+    "title": "Combo Nhật Cảnh Hoàng Kim",
+    "content": "Sản phẩm Combo Nhật Cảnh Hoàng Kim phù hợp với mọi nhu cầu, giá cả phải chăng.",
+    "cost": "199000",
+    "image": "/image/1749807362115.png",
+    "tag_product": "combochaucay",
+    "createdAt": "2025-06-13T09:36:02.122Z"
+  }
+]

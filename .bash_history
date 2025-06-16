@@ -1,0 +1,11 @@
+cd public
+more danh-sach-khach-hang-dang-ky.json 
+more danh-sach-khach-hang-dang-ky.json 
+more danh-sach-khach-hang-dang-ky.json 
+cd p
+cd public/
+more upload-content.json 
+dir image/
+dir image/
+cd public/
+more don-hang.json

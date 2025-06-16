@@ -38,5 +38,21 @@
     "address": "12",
     "registerPassword": "conmaquan",
     "registerPasswordConfirm": "conmaquan"
+  },
+  {
+    "registerName": "a",
+    "registerEmail": "a@gmail.com",
+    "sdt": "a",
+    "address": "a",
+    "registerPassword": "a",
+    "registerPasswordConfirm": "a"
+  },
+  {
+    "registerName": "Trần Quang Tuấn",
+    "registerEmail": "tuantqtb01555@gmail.com",
+    "sdt": "0783296329",
+    "address": "226/15 khu phố 3 Trung Dũng, Biên Hòa, Đồng Nai",
+    "registerPassword": "Tuan@1234",
+    "registerPasswordConfirm": "Tuan@1234"
   }
 ]

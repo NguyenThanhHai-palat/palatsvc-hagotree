@@ -1,41 +1,16 @@
 [
   {
-    "Name": "maminhquan",
-    "address": "Thủ đô hà nội",
-    "address2": "Căn hộ cấp 4",
-    "phone": "0947192590",
-    "email": "quantmtb01641@gnail.com",
-    "note": "sao cây xấu v",
-    "DonHang": "[{\"name\":\"Sản phẩm 6\",\"price\":100000,\"image\":\"../IMG/SanPham06.jpg\",\"quantity\":1},{\"name\":\"Sản phẩm 4\",\"price\":180000,\"image\":\"../IMG/SanPham04.jpg\",\"quantity\":1},{\"name\":\"Chậu 7\",\"price\":100000,\"image\":\"../IMG/Chậu 7.PNG\",\"quantity\":1}]",
-    "MaGiaoDich": "1749316326890quantmtb01641gnailcom",
-    "Ttdon": "Hoàn thành đơn",
-    "TimeDatHang": "0:12 8/6/2025",
-    "DiaChiTinhThanh": "00001,001,01"
-  },
-  {
-    "Name": "TEST 2",
-    "address": "no",
+    "Name": "Nguyễn Thanh Hải",
+    "address": "Biên Hòa",
     "address2": "",
-    "phone": "43667432",
-    "email": "contacttest@palat.dev",
-    "note": "",
-    "DonHang": "[{\"name\":\"Combo Hồng Lam Mộng\",\"price\":219000,\"image\":\"../IMG/Combo Hago 3.png\",\"quantity\":1}]",
-    "MaGiaoDich": "1749317026362contacttestpalatdev",
-    "Ttdon": "Đã bị hủy",
-    "TimeDatHang": "0:23 8/6/2025",
-    "DiaChiTinhThanh": "01276,040,04"
-  },
-  {
-    "Name": "ac",
-    "address": "sac",
-    "address2": "ác",
-    "phone": "âcsc",
-    "email": "quantmtb01641@gnail.com",
-    "note": "ác",
-    "DonHang": "[{\"name\":\"Sản phẩm 5\",\"price\":100000,\"image\":\"../IMG/SanPham05.jpg\",\"quantity\":1}]",
-    "MaGiaoDich": "1749317235482quantmtb01641gnailcom",
-    "Ttdon": "Hoàn thành đơn",
-    "TimeDatHang": "0:27 8/6/2025",
-    "DiaChiTinhThanh": "01270,040,04"
+    "phone": "0904548362",
+    "email": "contact@palat.io.vn",
+    "note": "test",
+    "DonHang": "[{\"name\":\"Sản phẩm 5\",\"price\":100000,\"image\":\"../IMG/SanPham05.jpg\",\"quantity\":1},{\"name\":\"Chậu 7\",\"price\":100000,\"image\":\"../IMG/Chậu 7.PNG\",\"quantity\":1},{\"name\":\"Combo Hoàng Kim Tỏa Sắc\",\"price\":299000,\"image\":\"../IMG/Combo Hago 2.png\",\"quantity\":1}]",
+    "MaGiaoDich": "1749709947150contactpalatiovn",
+    "Ttdon": "Đã xác nhận, chờ đóng gói và vận chuyển",
+    "TimeDatHang": "13:32 12/6/2025",
+    "TimeNhanHang": "Mai",
+    "DiaChiTinhThanh": "11224,299,30"
   }
 ]
