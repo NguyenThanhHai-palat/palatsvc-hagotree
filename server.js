@@ -42,7 +42,7 @@ app.get("/image/:name", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.status(201).json({ message: "SERVER HAGOTREE" });
+  res.status(201).json({ message: "SERVER - HAGOTREE - PALAT SERVICE  -  v:1.0" });
 });
 app.get("/dh", (req, res) => {
   res.sendFile(__dirname + "/public/don-hang.json");
@@ -104,20 +104,11 @@ app.get("/get-posts", (req, res) => {
     }
   });
 });
-app.post("/upload-post", express.json({ limit: "10mb" }), (req, res) => {
-  const { title, cost, content, image, tag } = req.body;
+app.post("/upload-post", upload.single("image"), (req, res) => {
+  const { title, cost, content, tag } = req.body;
+  const file = req.file;
 
-  let imageFilename = "";
-  if (image && image.startsWith("data:image")) {
-    const matches = image.match(/^data:(image\/.+);base64,(.+)$/);
-    if (matches) {
-      const ext = matches[1].split("/")[1];
-      const data = matches[2];
-      imageFilename = `${Date.now()}.${ext}`;
-      const imagePath = path.join(__dirname, "public", "image", imageFilename);
-      fs.writeFileSync(imagePath, Buffer.from(data, "base64"));
-    }
-  }
+  const imageFilename = file ? `/image/${file.filename}` : "";
 
   const jsonPath = path.join(__dirname, "public", "sp.json");
   let posts = [];
@@ -131,7 +122,6 @@ app.post("/upload-post", express.json({ limit: "10mb" }), (req, res) => {
     }
   }
 
-  // Tạo ID dạng sp1, sp2, ...
   const newId = `sp${posts.length + 1}`;
 
   const post = {
@@ -139,16 +129,16 @@ app.post("/upload-post", express.json({ limit: "10mb" }), (req, res) => {
     title,
     content,
     cost,
-    image: imageFilename ? `/image/${imageFilename}` : "",
+    image: imageFilename,
     tag_product: tag,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
   posts.push(post);
   fs.writeFileSync(jsonPath, JSON.stringify(posts, null, 2));
+
   res.status(201).send("Đăng bài thành công.");
 });
-
 
 app.post("/feedback", express.json({ limit: "10mb" }), (req, res) => {
   const { star,idsp,product,feedback,email,image } = req.body;
