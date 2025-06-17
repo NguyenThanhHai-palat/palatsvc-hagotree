@@ -257,13 +257,13 @@ app.post("/get-don-hang", (req, res) => {
 
 
 app.post("/get-user", (req, res) => {
-  let { email } = req.body;
-  if (!email) {
+  let { krlx } = req.body;
+  if (!krlx) {
     return res.status(400).json({ message: "Thiếu email trong request." });
   }
-  const binaryString = atob(email);
+  const binaryString = atob(krlx);
   const buffer = Uint8Array.from(binaryString, char => char.charCodeAt(0));
-  email = new TextDecoder().decode(buffer);
+  const email = new TextDecoder().decode(buffer);
 
 
   const filePath = path.join(
