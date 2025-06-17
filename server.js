@@ -6,12 +6,19 @@ const iconv = require("iconv-lite");
 const bodyParser = require("body-parser");
 const app = express();
 const port = 3000;
+
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "image/");
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, "public", "image");
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
   },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const filename = `${Date.now()}${ext}`;
+    cb(null, filename);
   },
 });
 const dataFilePath = path.join("./public/data.json");
