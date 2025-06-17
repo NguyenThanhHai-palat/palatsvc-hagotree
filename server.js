@@ -6,7 +6,7 @@ const iconv = require("iconv-lite");
 const bodyParser = require("body-parser");
 const app = express();
 const port = 3000;
-
+const atob = (base64) => Buffer.from(base64, 'base64').toString('binary');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, "public", "image");
@@ -257,12 +257,14 @@ app.post("/get-don-hang", (req, res) => {
 
 
 app.post("/get-user", (req, res) => {
-  const { email } = req.body;
-  const decoder = new TextDecoder();
-  const emailfax =  decoder.decode(email);
+  let { email } = req.body;
   if (!email) {
     return res.status(400).json({ message: "Thiếu email trong request." });
   }
+  const binaryString = atob(email);
+  const buffer = Uint8Array.from(binaryString, char => char.charCodeAt(0));
+  email = new TextDecoder().decode(buffer);
+
 
   const filePath = path.join(
     __dirname,
