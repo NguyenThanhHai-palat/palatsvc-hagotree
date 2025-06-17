@@ -258,6 +258,8 @@ app.post("/get-don-hang", (req, res) => {
 
 app.post("/get-user", (req, res) => {
   const { email } = req.body;
+  const decoder = new TextDecoder();
+  const emailfax =  decoder.decode(email);
   if (!email) {
     return res.status(400).json({ message: "Thiếu email trong request." });
   }
