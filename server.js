@@ -729,6 +729,8 @@ app.post("/huy-don", (req, res) => {
 });
 app.post("/xac-nhan-don", (req, res) => {
   const { MaGiaoDich } = req.body;
+  console.log(MaGiaoDich);
+
   if (!MaGiaoDich) {
     return res.status(400).send("Thiếu mã giao dịch.");
   }
