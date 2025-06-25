@@ -49,7 +49,7 @@ app.get("/image/:name", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.status(201).json({ message: "SERVER - HAGOTREE - PALAT SERVICE  -  v:1.0" });
+  res.status(201).json({ message: "SERVER - HAGOTREE - PALAT SERVICE  -  v:1.1" });
 });
 app.get("/dh", (req, res) => {
   res.sendFile(__dirname + "/public/don-hang.json");
@@ -64,7 +64,180 @@ app.get("/sp/12", (req, res) => {
   res.sendFile(__dirname + "/public/sp.json");
 });
 
+app.get("/voucher", (req, res) => {
+ res.sendFile(__dirname + "/public/voucher.json");
+});
 
+
+
+  
+app.post("/voucher", (req, res) => {
+  const voucherData = req.body;
+  const filePath = path.join(__dirname, "public", "voucher.json");
+  // Đọc file hiện tại
+  let existing = [];
+  if (fs.existsSync(filePath)) {
+    const content = fs.readFileSync(filePath, "utf-8");
+    try {
+      existing = JSON.parse(content);
+    } catch (err) {
+      console.error("Không đọc được JSON:", err);
+    }
+  }
+
+  // Thêm voucher mới
+  existing.push({
+    ...voucherData,
+    id: Date.now()
+  });
+
+  // Ghi vào file
+  fs.writeFileSync(filePath, JSON.stringify(existing, null, 2), "utf-8");
+
+  res.json({ success: true, message: "Voucher Da Tao Thanh Cong" });
+});
+
+
+app.post("/use-voucher", (req, res) => {
+  const { voucherCode } = req.body;
+
+  if (!voucherCode) {
+    return res.status(400).json({ success: false, message: "Thiếu mã voucher." });
+  }
+
+  const jsonPath = path.join(__dirname, "public", "voucher.json");
+
+  if (!fs.existsSync(jsonPath)) {
+    return res.status(404).json({ success: false, message: "Không tìm thấy dữ liệu." });
+  }
+
+  const data = fs.readFileSync(jsonPath, "utf8");
+  let vouchers = [];
+
+  try {
+    vouchers = JSON.parse(data);
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Lỗi dữ liệu." });
+  }
+
+  const voucher = vouchers.find(v => v.voucherCode === voucherCode);
+
+  if (!voucher) {
+    return res.status(404).json({ success: false, message: "Mã không tồn tại." });
+  }
+
+  const now = new Date();
+  const dateFrom = new Date(voucher.dateFrom);
+  const dateTo = new Date(voucher.dateTo);
+
+  if (now < dateFrom) {
+    return res.status(400).json({ success: false, message: "Chưa đến thời gian áp dụng." });
+  }
+
+  if (now > dateTo) {
+    return res.status(400).json({ success: false, message: "Voucher đã hết hạn." });
+  }
+
+  return res.json({ success: true, voucher });
+});
+
+
+app.post("/used-voucher", (req, res) => {
+  const { voucherCode } = req.body;
+  console.log("📥 Nhận yêu cầu với mã:", voucherCode);
+
+  if (!voucherCode) {
+    return res.status(400).json({ success: false, message: "Thiếu mã voucher." });
+  }
+
+  const jsonPath = path.join(__dirname, "public", "voucher.json");
+
+  if (!fs.existsSync(jsonPath)) {
+    return res.status(404).json({ success: false, message: "Không tìm thấy file dữ liệu." });
+  }
+
+  let vouchers;
+  try {
+    const raw = fs.readFileSync(jsonPath, "utf8");
+    vouchers = JSON.parse(raw);
+  } catch (e) {
+    console.error("❌ Lỗi đọc hoặc parse file:", e);
+    return res.status(500).json({ success: false, message: "Lỗi đọc file." });
+  }
+
+  const index = vouchers.findIndex(v => v.voucherCode === voucherCode);
+  if (index === -1) {
+    return res.status(404).json({ success: false, message: "Voucher không tồn tại." });
+  }
+
+  const voucher = vouchers[index];
+
+  // Xử lý số
+  let use = parseInt(voucher.use || 0);
+  let maxUsed = parseInt(voucher.maxUsed || 0);
+
+  console.log("🔎 Trước khi cập nhật: use =", use, "maxUsed =", maxUsed);
+
+  if (use >= maxUsed) {
+    return res.status(400).json({ success: false, message: "Voucher đã hết lượt sử dụng." });
+  }
+
+  use++;
+  vouchers[index].use = use;
+
+  console.log("✅ Sau khi cập nhật: use =", use);
+
+  fs.writeFile(jsonPath, JSON.stringify(vouchers, null, 2), (err) => {
+    if (err) {
+      console.error("❌ Lỗi ghi file:", err);
+      return res.status(500).json({ success: false, message: "Không thể ghi file." });
+    }
+
+    console.log("📁 Đã ghi thành công file voucher.json");
+    return res.status(201).json({ success: true, voucher: vouchers[index] });
+  });
+});
+
+app.post("/del-voucher", (req, res) => {
+  const { voucherCode } = req.body;
+  console.log(req.body)
+  if (!voucherCode) {
+    return res.status(400).send("Thiếu mã giao dịch.");
+  }
+
+  const jsonPath = path.join(__dirname, "public", "voucher.json");
+
+   fs.readFile(jsonPath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Lỗi đọc file:", err);
+      return res.status(500).send("Lỗi đọc dữ liệu đơn hàng.");
+    }
+
+    let orders;
+    try {
+      orders = JSON.parse(data);
+    } catch (e) {
+      console.error("Lỗi parse JSON:", e);
+      return res.status(500).send("Lỗi dữ liệu đơn hàng.");
+    }
+
+    const originalLength = orders.length;
+    orders = orders.filter(order => order.voucherCode !== voucherCode);
+
+    if (orders.length === originalLength) {
+      return res.status(404).send("Không tìm thấy đơn hàng cần xóa.");
+    }
+
+    fs.writeFile(jsonPath, JSON.stringify(orders, null, 2), (err) => {
+      if (err) {
+        console.error("Lỗi ghi file:", err);
+        return res.status(500).send("Lỗi ghi file sau khi xóa.");
+      }
+
+      return res.status(201).send("Đơn hàng đã được xóa.");
+    });
+  });
+});
 
 //post sản phẩm
 app.use(express.static("data"));
