@@ -144,7 +144,7 @@ app.post("/use-voucher", (req, res) => {
 
 app.post("/used-voucher", (req, res) => {
   const { voucherCode } = req.body;
-  console.log("📥 Nhận yêu cầu với mã:", voucherCode);
+  console.log(voucherCode);
 
   if (!voucherCode) {
     return res.status(400).json({ success: false, message: "Thiếu mã voucher." });
@@ -161,7 +161,7 @@ app.post("/used-voucher", (req, res) => {
     const raw = fs.readFileSync(jsonPath, "utf8");
     vouchers = JSON.parse(raw);
   } catch (e) {
-    console.error("❌ Lỗi đọc hoặc parse file:", e);
+    console.error(e);
     return res.status(500).json({ success: false, message: "Lỗi đọc file." });
   }
 
@@ -176,7 +176,7 @@ app.post("/used-voucher", (req, res) => {
   let use = parseInt(voucher.use || 0);
   let maxUsed = parseInt(voucher.maxUsed || 0);
 
-  console.log("🔎 Trước khi cập nhật: use =", use, "maxUsed =", maxUsed);
+  console.log( use, "/", maxUsed);
 
   if (use >= maxUsed) {
     return res.status(400).json({ success: false, message: "Voucher đã hết lượt sử dụng." });
@@ -185,11 +185,11 @@ app.post("/used-voucher", (req, res) => {
   use++;
   vouchers[index].use = use;
 
-  console.log("✅ Sau khi cập nhật: use =", use);
+  console.log(use);
 
   fs.writeFile(jsonPath, JSON.stringify(vouchers, null, 2), (err) => {
     if (err) {
-      console.error("❌ Lỗi ghi file:", err);
+      console.error(err);
       return res.status(500).json({ success: false, message: "Không thể ghi file." });
     }
 
@@ -202,7 +202,7 @@ app.post("/del-voucher", (req, res) => {
   const { voucherCode } = req.body;
   console.log(req.body)
   if (!voucherCode) {
-    return res.status(400).send("Thiếu mã giao dịch.");
+    return res.status(400).send("Thiếu mã voucher.");
   }
 
   const jsonPath = path.join(__dirname, "public", "voucher.json");
