@@ -31,7 +31,7 @@ const storage2 = multer.diskStorage({
 });
 
 const upload2 = multer({ storage: storage2 });
-
+upload2.single("mp3up")
 const dataFilePath = path.join("./public/data.json");
 app.use(express.json({ limit: '25mb' }));
 const upload = multer({ storage: storage });
@@ -1053,6 +1053,7 @@ app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => 
 });
 app.post("/uploadmusic-user/Post", express.json(), (req, res) => {
   const { name, user, rev } = req.body;
+  console.log(req.body);
   const filePath = path.join(__dirname, "private", "musicupload.json");
 
   fs.readFile(filePath, "utf8", (err, data) => {
