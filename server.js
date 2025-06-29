@@ -983,14 +983,14 @@ function decodeMimeWord(encoded) {
 
   if (encoding === "B") {
     const buffer = Buffer.from(text, "base64");
-    return buffer.toString(charset);
+    return iconv.decode(buffer, charset); // Dùng iconv để decode chính xác
   }
 
   if (encoding === "Q") {
     const decoded = text.replace(/_/g, " ").replace(/=([A-Fa-f0-9]{2})/g, (_, hex) =>
       String.fromCharCode(parseInt(hex, 16))
     );
-    return Buffer.from(decoded, "binary").toString(charset);
+    return iconv.decode(Buffer.from(decoded, "binary"), charset);
   }
 
   return encoded;
@@ -1025,11 +1025,24 @@ app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => 
 
   // ✅ Decode MIME nếu cần và lọc tên an toàn
   const decodedName = decodeMimeWord(rawName);
-  const namex = decodedName.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_").trim(); // loại ký tự cấm
+  let namex = rawName;
+const match = rawName.match(/=\?(.+?)\?(B|Q)\?(.+?)\?=/i);
+
+if (match) {
+  try {
+    namex = decodeMimeWord(rawName);
+  } catch (e) {
+    console.error("❌ Lỗi khi decode MIME:", e);
+    return res.status(400).send("Tên file không hợp lệ");
+  }
+}
+ // loại ký tự cấm
   console.log("🎧 Tên file sau decode:", namex);
 
   // 🔥 multer lưu file tạm với tên random → cần rename lại
   const currentPath = path.join(file.destination, file.filename);
+namex = namex.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_").trim();
+
   const finalPath = path.join(file.destination, namex);
 
   fs.rename(currentPath, finalPath, (err) => {
