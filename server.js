@@ -21,6 +21,17 @@ const storage = multer.diskStorage({
     cb(null, filename);
   },
 });
+const storage2 = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "dataupload/"); // Đường dẫn thư mục để lưu file
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname); // Tên file sẽ giữ nguyên
+  },
+});
+
+const upload2 = multer({ storage: storage2 });
+
 const dataFilePath = path.join("./public/data.json");
 app.use(express.json({ limit: '25mb' }));
 const upload = multer({ storage: storage });
@@ -799,7 +810,45 @@ app.post("/dang-nhap", (req, res) => {
     }
   });
 });
+app.post("/chinh-san-pham", (req, res) => {
+  const { idsp, ...updatedFields } = req.body;
 
+  if (!idsp) {
+    return res.status(400).send("Thiếu ID sản phẩm.");
+  }
+
+  const jsonPath = path.join(__dirname, "public", "sp", "12.json");
+
+  fs.readFile(jsonPath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Lỗi đọc file:", err);
+      return res.status(500).send("Lỗi đọc dữ liệu sản phẩm.");
+    }
+
+    let products = [];
+    try {
+      products = JSON.parse(data);
+    } catch (e) {
+      console.error("Lỗi parse JSON:", e);
+      return res.status(500).send("Lỗi dữ liệu sản phẩm.");
+    }
+
+    const index = products.findIndex(p => p.idsp === idsp);
+    if (index === -1) {
+      return res.status(404).send("Không tìm thấy sản phẩm có idsp này.");
+    }
+    products[index] = { ...products[index], ...updatedFields };
+
+    fs.writeFile(jsonPath, JSON.stringify(products, null, 2), (err) => {
+      if (err) {
+        console.error("Lỗi ghi file:", err);
+        return res.status(500).send("Lỗi khi lưu sản phẩm.");
+      }
+
+      return res.status(200).send("Đã cập nhật sản phẩm.");
+    });
+  });
+});
 app.post("/admin", (req, res) => {
   const formData = req.body;
   const { loginEmail, loginPassword } = req.body;
@@ -879,6 +928,7 @@ app.post("/key-start/Post", express.json(), (req, res) => {
 
 
 });
+app.get("/list-get", (req, res) => {res.sendFile(__dirname + "/private/musicupload.json");});
 app.post("/lg-60-cgpass/Post", express.json(), (req, res) => {
   const { email } = req.body;
 
@@ -959,7 +1009,7 @@ app.post("/sgu-60/Post", express.json(), (req, res) => {
 });
 
 
-app.post("/uploadmusic-byte/Post", upload.single("mp3up"), (req, res, next) => {
+app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => {
   const file = req.file;
   console.log(req.body);
   const asx = req.body; 
@@ -1006,13 +1056,11 @@ app.post("/uploadmusic-byte/Post", upload.single("mp3up"), (req, res, next) => {
   });
 });
 app.post("/uploadmusic-user/Post", express.json(), (req, res) => {
-  console.log(req.body);
-  const { name, user } = req.body;
-
+  const { name, user, rev } = req.body;
   const filePath = path.join(__dirname, "private", "musicupload.json");
 
   fs.readFile(filePath, "utf8", (err, data) => {
-    if (err) {
+    if (err && err.code !== "ENOENT") {
       console.error(err);
       return res.status(500).send("Error reading file");
     }
@@ -1025,7 +1073,12 @@ app.post("/uploadmusic-user/Post", express.json(), (req, res) => {
         console.error("JSON parse error:", parseErr);
       }
     }
-    users.push({ name, user });
+    users.push({
+      name,
+      user,
+      rev,
+      timestamp: Date.now() 
+    });
 
     fs.writeFile(filePath, JSON.stringify(users, null, 2), (err) => {
       if (err) {
@@ -1034,6 +1087,56 @@ app.post("/uploadmusic-user/Post", express.json(), (req, res) => {
       }
       res.status(200).send("OK");
     });
+  });
+});
+
+app.get("/music-get/:name", (req, res) => {
+  const name = req.params.name;
+  const mp3Path = path.join(__dirname, "dataupload", name);
+  const jsonPath = path.join(__dirname, "private", "musicupload.json");
+
+  if (!fs.existsSync(mp3Path)) {
+    return res.status(404).send("File not found");
+  }
+
+  fs.readFile(jsonPath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Error reading metadata:", err);
+      return res.status(500).send("Internal server error");
+    }
+
+    let uploads = [];
+    if (data) {
+      try {
+        uploads = JSON.parse(data);
+      } catch (e) {
+        return res.status(500).send("Corrupted metadata file");
+      }
+    }
+
+    const now = Date.now();
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+
+    const fileMeta = uploads.find(u => u.name === name);
+
+    if (!fileMeta) {
+      return res.status(404).send("Metadata not found");
+    }
+
+    if (now - fileMeta.timestamp > threeDays) {
+      // Xóa file và metadata
+      fs.unlink(mp3Path, (err) => {
+        if (err) console.error("Error deleting file:", err);
+      });
+
+      uploads = uploads.filter(u => u.name !== name);
+      fs.writeFile(jsonPath, JSON.stringify(uploads, null, 2), (err) => {
+        if (err) console.error("Error updating metadata:", err);
+      });
+
+      return res.status(410).send("File expired and deleted");
+    }
+    res.sendFile(mp3Path);
   });
 });
 
