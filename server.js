@@ -23,7 +23,8 @@ const storage = multer.diskStorage({
 });
 const storage2 = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "dataupload/"); // Đường dẫn thư mục để lưu file
+    const dest = path.join(__dirname, "dataupload"); 
+    cb(null, dest); 
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname); // Tên file sẽ giữ nguyên
