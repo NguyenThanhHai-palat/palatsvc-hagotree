@@ -29,7 +29,10 @@ const storage2 = multer.diskStorage({
     cb(null, file.originalname); // Tên file sẽ giữ nguyên
   },
 });
-
+app.use((req, res, next) => {
+  console.log(`[DEBUG] ${req.method} ${req.originalUrl}`);
+  next();
+});
 const upload2 = multer({ storage: storage2 });
 upload2.single("mp3up")
 const dataFilePath = path.join("./public/data.json");
