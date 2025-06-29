@@ -34,7 +34,6 @@ app.use((req, res, next) => {
   next();
 });
 const upload2 = multer({ storage: storage2 });
-upload2.single("mp3up")
 const dataFilePath = path.join("./public/data.json");
 app.use(express.json({ limit: '25mb' }));
 const upload = multer({ storage: storage });
