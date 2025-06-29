@@ -999,61 +999,67 @@ function decodeMimeWord(encoded) {
 // Route nhận file mp3
 app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => {
   const file = req.file;
-  console.log("🟢 Đã nhận file:", req.file?.originalname);
-  console.log(req.body);
 
-  const asx = req.body;
-  const jsonString = asx["application/json"];
+  console.log("🟢 Đã nhận file:", file?.originalname);
+  console.log("📦 req.body:", req.body);
+
+  if (!file) {
+    return res.status(400).send("❌ Không nhận được file");
+  }
+
+  // Parse JSON kèm theo
+  const jsonString = req.body["application/json"];
   let jsonObj;
 
   try {
     jsonObj = JSON.parse(jsonString);
   } catch (e) {
-    return res.status(400).send("Lỗi JSON đầu vào");
-  }
-
-  if (!file) {
-    const error = new Error("Vui lòng chọn một file!");
-    error.httpStatusCode = 400;
-    return next(error);
+    return res.status(400).send("❌ Lỗi JSON đầu vào");
   }
 
   const rawName = jsonObj.name;
   if (!rawName) {
-    const error = new Error("Vui lòng cung cấp tên file!");
-    error.httpStatusCode = 400;
-    return next(error);
+    return res.status(400).send("❌ Thiếu tên file trong JSON");
   }
 
-  const namex = decodeMimeWord(rawName); // ✅ giải mã MIME base64 nếu có
+  const namex = decodeMimeWord(rawName);
   console.log("🎧 Tên file sau decode:", namex);
 
-  const newFileName = path.join(file.destination, namex);
-  fs.rename(file.path, newFileName, (err) => {
+  // 🔥 Không rename nữa — file đã được multer ghi sẵn với tên originalname
+  const currentPath = path.join(file.destination, file.filename);
+  const finalPath = path.join(file.destination, namex);
+
+  // Nếu muốn đổi tên file (tùy chọn)
+  fs.rename(currentPath, finalPath, (err) => {
     if (err) {
-      return next(err);
+      console.error("❌ Lỗi đổi tên file:", err);
+      return res.status(500).send("Lỗi đổi tên file");
     }
 
-    console.log("File received and renamed:", {
-      ...file,
-      originalname: namex,
-      path: newFileName,
-    });
+    console.log("✅ File đã được đổi tên:", finalPath);
 
     const directoryPath = path.join(__dirname, "dataupload");
+
     fs.readdir(directoryPath, (err, files) => {
       if (err) {
-        return console.log("Unable to scan directory: " + err);
+        console.error("❌ Lỗi đọc thư mục:", err);
+        return res.status(500).send("Lỗi đọc thư mục");
       }
+
       const mp3Files = files.filter((file) => path.extname(file) === ".mp3");
       fs.writeFile("music.json", JSON.stringify(mp3Files), (err) => {
-        if (err) throw err;
-        console.log("Music JSON file has been saved!");
+        if (err) {
+          console.error("❌ Lỗi ghi music.json:", err);
+          return res.status(500).send("Lỗi ghi danh sách nhạc");
+        }
+
+        console.log("✅ Danh sách nhạc đã được cập nhật.");
         res.status(200).send("OK");
       });
     });
   });
 });
+
 app.post("/uploadmusic-user/Post", express.json(), (req, res) => {
   const { name, user, rev } = req.body;
   console.log(req.body);
