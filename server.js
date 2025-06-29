@@ -849,9 +849,14 @@ app.post("/lg-60/Post", express.json(), (req, res) => {
         const users = JSON.parse(data);
 
         if (users[email] && users[email].password === password) {
-          res.status(200).send("OK");
+          if(users[email].password === password){
+            res.status(200).send("OK");
+          }
+          else{
+            res.status(200).send("NO");
+          }
         } else {
-          res.status(200).send("NO");
+          res.status(200).send("NO EMAIL");
         }
       } catch (parseErr) {
         console.error("Error parsing JSON:", parseErr);
@@ -952,6 +957,86 @@ app.post("/sgu-60/Post", express.json(), (req, res) => {
     res.status(400).send("Bad Request");
   }
 });
+
+
+app.post("/uploadmusic-byte/Post", upload.single("mp3up"), (req, res, next) => {
+  const file = req.file;
+  console.log(req.body);
+  const asx = req.body; 
+  const jsonString = asx["application/json"];
+  let jsonObj = JSON.parse(jsonString);
+  let fileName = jsonObj; 
+  console.log(fileName.name);
+  const namex = fileName.name;
+  if (!file) {
+    const error = new Error("Vui lòng chọn một file!");
+    error.httpStatusCode = 400;
+    return next(error);
+  }
+
+  if (!fileName) {
+    const error = new Error("Vui lòng cung cấp tên file!");
+    error.httpStatusCode = 400;
+    return next(error);
+  }
+  const newFileName = path.join(file.destination, namex);
+  fs.rename(file.path, newFileName, (err) => {
+    if (err) {
+      return next(err);
+    }
+
+    console.log("File received and renamed:", {
+      ...file,
+      originalname: fileName,
+      path: newFileName,
+    });
+
+    const directoryPath = path.join(__dirname, "dataupload");
+    fs.readdir(directoryPath, (err, files) => {
+      if (err) {
+        return console.log("Unable to scan directory: " + err);
+      }
+      const mp3Files = files.filter((file) => path.extname(file) === ".mp3");
+      fs.writeFile("music.json", JSON.stringify(mp3Files), (err) => {
+        if (err) throw err;
+        console.log("Music JSON file has been saved!");
+        res.status(200).send("OK");
+      });
+    });
+  });
+});
+app.post("/uploadmusic-user/Post", express.json(), (req, res) => {
+  console.log(req.body);
+  const { name, user } = req.body;
+
+  const filePath = path.join(__dirname, "private", "musicupload.json");
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Error reading file");
+    }
+
+    let users = [];
+    if (data) {
+      try {
+        users = JSON.parse(data);
+      } catch (parseErr) {
+        console.error("JSON parse error:", parseErr);
+      }
+    }
+    users.push({ name, user });
+
+    fs.writeFile(filePath, JSON.stringify(users, null, 2), (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Error writing file");
+      }
+      res.status(200).send("OK");
+    });
+  });
+});
+
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
