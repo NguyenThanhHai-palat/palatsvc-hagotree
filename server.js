@@ -810,45 +810,7 @@ app.post("/dang-nhap", (req, res) => {
     }
   });
 });
-app.post("/chinh-san-pham", (req, res) => {
-  const { idsp, ...updatedFields } = req.body;
 
-  if (!idsp) {
-    return res.status(400).send("Thiếu ID sản phẩm.");
-  }
-
-  const jsonPath = path.join(__dirname, "public", "sp", "12.json");
-
-  fs.readFile(jsonPath, "utf8", (err, data) => {
-    if (err) {
-      console.error("Lỗi đọc file:", err);
-      return res.status(500).send("Lỗi đọc dữ liệu sản phẩm.");
-    }
-
-    let products = [];
-    try {
-      products = JSON.parse(data);
-    } catch (e) {
-      console.error("Lỗi parse JSON:", e);
-      return res.status(500).send("Lỗi dữ liệu sản phẩm.");
-    }
-
-    const index = products.findIndex(p => p.idsp === idsp);
-    if (index === -1) {
-      return res.status(404).send("Không tìm thấy sản phẩm có idsp này.");
-    }
-    products[index] = { ...products[index], ...updatedFields };
-
-    fs.writeFile(jsonPath, JSON.stringify(products, null, 2), (err) => {
-      if (err) {
-        console.error("Lỗi ghi file:", err);
-        return res.status(500).send("Lỗi khi lưu sản phẩm.");
-      }
-
-      return res.status(200).send("Đã cập nhật sản phẩm.");
-    });
-  });
-});
 app.post("/admin", (req, res) => {
   const formData = req.body;
   const { loginEmail, loginPassword } = req.body;
@@ -1009,26 +971,60 @@ app.post("/sgu-60/Post", express.json(), (req, res) => {
 });
 
 
+function decodeMimeWord(encoded) {
+  const match = encoded.match(/=\?(.+?)\?(B|Q)\?(.+?)\?=/i);
+  if (!match) return encoded;
+
+  const charset = match[1];
+  const encoding = match[2].toUpperCase();
+  const text = match[3];
+
+  if (encoding === "B") {
+    const buffer = Buffer.from(text, "base64");
+    return iconv.decode(buffer, charset);
+  }
+
+  if (encoding === "Q") {
+    const decoded = text.replace(/_/g, " ").replace(/=([A-Fa-f0-9]{2})/g, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    );
+    return iconv.decode(Buffer.from(decoded, "binary"), charset);
+  }
+
+  return encoded;
+}
+
+// Route nhận file mp3
 app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => {
   const file = req.file;
   console.log(req.body);
-  const asx = req.body; 
+
+  const asx = req.body;
   const jsonString = asx["application/json"];
-  let jsonObj = JSON.parse(jsonString);
-  let fileName = jsonObj; 
-  console.log(fileName.name);
-  const namex = fileName.name;
+  let jsonObj;
+
+  try {
+    jsonObj = JSON.parse(jsonString);
+  } catch (e) {
+    return res.status(400).send("Lỗi JSON đầu vào");
+  }
+
   if (!file) {
     const error = new Error("Vui lòng chọn một file!");
     error.httpStatusCode = 400;
     return next(error);
   }
 
-  if (!fileName) {
+  const rawName = jsonObj.name;
+  if (!rawName) {
     const error = new Error("Vui lòng cung cấp tên file!");
     error.httpStatusCode = 400;
     return next(error);
   }
+
+  const namex = decodeMimeWord(rawName); // ✅ giải mã MIME base64 nếu có
+  console.log("🎧 Tên file sau decode:", namex);
+
   const newFileName = path.join(file.destination, namex);
   fs.rename(file.path, newFileName, (err) => {
     if (err) {
@@ -1037,7 +1033,7 @@ app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => 
 
     console.log("File received and renamed:", {
       ...file,
-      originalname: fileName,
+      originalname: namex,
       path: newFileName,
     });
 
