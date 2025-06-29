@@ -983,18 +983,19 @@ function decodeMimeWord(encoded) {
 
   if (encoding === "B") {
     const buffer = Buffer.from(text, "base64");
-    return iconv.decode(buffer, charset);
+    return buffer.toString(charset);
   }
 
   if (encoding === "Q") {
     const decoded = text.replace(/_/g, " ").replace(/=([A-Fa-f0-9]{2})/g, (_, hex) =>
       String.fromCharCode(parseInt(hex, 16))
     );
-    return iconv.decode(Buffer.from(decoded, "binary"), charset);
+    return Buffer.from(decoded, "binary").toString(charset);
   }
 
   return encoded;
 }
+
 
 // Route nhận file mp3
 app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => {
@@ -1022,14 +1023,15 @@ app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => 
     return res.status(400).send("❌ Thiếu tên file trong JSON");
   }
 
-  const namex = decodeMimeWord(rawName);
+  // ✅ Decode MIME nếu cần và lọc tên an toàn
+  const decodedName = decodeMimeWord(rawName);
+  const namex = decodedName.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_").trim(); // loại ký tự cấm
   console.log("🎧 Tên file sau decode:", namex);
 
-  // 🔥 Không rename nữa — file đã được multer ghi sẵn với tên originalname
+  // 🔥 multer lưu file tạm với tên random → cần rename lại
   const currentPath = path.join(file.destination, file.filename);
   const finalPath = path.join(file.destination, namex);
 
-  // Nếu muốn đổi tên file (tùy chọn)
   fs.rename(currentPath, finalPath, (err) => {
     if (err) {
       console.error("❌ Lỗi đổi tên file:", err);
@@ -1059,6 +1061,7 @@ app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => 
     });
   });
 });
+
 
 app.post("/uploadmusic-user/Post", express.json(), (req, res) => {
   const { name, user, rev } = req.body;
