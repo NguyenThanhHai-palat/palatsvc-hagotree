@@ -997,6 +997,7 @@ function decodeMimeWord(encoded) {
 // Route nhận file mp3
 app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => {
   const file = req.file;
+  console.log("🟢 Đã nhận file:", req.file?.originalname);
   console.log(req.body);
 
   const asx = req.body;
