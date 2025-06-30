@@ -279,6 +279,37 @@ app.post("/save", (req, res) => {
     res.status(500).json({ error: "An error occurred while saving data." });
   }
 });
+app.post('/updatesp', (req, res) => {
+  const { index, product } = req.body;
+
+  if (typeof index !== 'number' || typeof product !== 'object') {
+    return res.status(400).send('Thiếu hoặc sai dữ liệu.');
+  }
+
+  const filePath = path.join(__dirname, 'public', 'sp.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).send('Không đọc được dữ liệu.');
+
+    let products = [];
+    try {
+      products = JSON.parse(data);
+    } catch (e) {
+      return res.status(500).send('Lỗi dữ liệu JSON.');
+    }
+
+    if (!products[index]) {
+      return res.status(404).send('Không tìm thấy sản phẩm để cập nhật.');
+    }
+
+    products[index] = product;
+
+    fs.writeFile(filePath, JSON.stringify(products, null, 2), err => {
+      if (err) return res.status(500).send('Không ghi được dữ liệu.');
+      res.status(200).send('Đã cập nhật sản phẩm.');
+    });
+  });
+});
 
 app.get("/get-posts", (req, res) => {
   const jsonPath = path.join(__dirname, "public", "upload-content.json");
