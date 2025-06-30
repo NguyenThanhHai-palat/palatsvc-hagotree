@@ -302,7 +302,12 @@ app.post('/updatesp', (req, res) => {
       return res.status(404).send('Không tìm thấy sản phẩm để cập nhật.');
     }
 
-    products[index] = product;
+    const updated = {
+      ...products[index], 
+      ...product          
+    };
+
+    products[index] = updated;
 
     fs.writeFile(filePath, JSON.stringify(products, null, 2), err => {
       if (err) return res.status(500).send('Không ghi được dữ liệu.');
@@ -310,6 +315,7 @@ app.post('/updatesp', (req, res) => {
     });
   });
 });
+
 
 app.get("/get-posts", (req, res) => {
   const jsonPath = path.join(__dirname, "public", "upload-content.json");
