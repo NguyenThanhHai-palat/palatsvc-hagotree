@@ -739,6 +739,37 @@ app.post("/xoa-don", (req, res) => {
   });
 });
 
+app.post('/delsp-pr1', (req, res) => {
+  const { index } = req.body;
+
+  if (typeof index !== 'number') {
+    return res.status(400).send('Thiếu index hoặc sai kiểu.');
+  }
+
+  const filePath = path.join(__dirname, 'public', 'sp.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).send('Không đọc được dữ liệu.');
+
+    let products = [];
+    try {
+      products = JSON.parse(data);
+    } catch (e) {
+      return res.status(500).send('Lỗi dữ liệu JSON.');
+    }
+
+    if (!products[index]) {
+      return res.status(404).send('Không tìm thấy sản phẩm để xóa.');
+    }
+
+    products.splice(index, 1); 
+
+    fs.writeFile(filePath, JSON.stringify(products, null, 2), err => {
+      if (err) return res.status(500).send('Không ghi được dữ liệu sau khi xóa.');
+      res.status(200).send('Đã xóa sản phẩm.');
+    });
+  });
+});
 
 app.post("/huy-don", (req, res) => {
   const { MaGiaoDich } = req.body;
