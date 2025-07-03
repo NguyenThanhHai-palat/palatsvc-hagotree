@@ -6,6 +6,10 @@ const iconv = require("iconv-lite");
 const bodyParser = require("body-parser");
 const app = express();
 const port = 3000;
+const otps = {}; // email -> { code, expires }
+
+
+const nodemailer = require("nodemailer");
 const atob = (base64) => Buffer.from(base64, 'base64').toString('binary');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -154,6 +158,76 @@ app.post("/use-voucher", (req, res) => {
 
   return res.json({ success: true, voucher });
 });
+
+
+async function sendOTPEmail(toEmail, otp) {
+  let transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "ngthhai1207@gmail.com",
+      pass: "zzkxptpnmqfaidzb",
+    },
+  });
+
+  let info = await transporter.sendMail({
+    from: '"Hago Tree" <noreply@hagotree.site>',
+    to: toEmail,
+    subject: "Xác nhận email - HagoTree",
+
+    html: `<div style="max-width:400px;margin:0 auto;padding:20px;background:#ffffff;border-radius:8px;font-family:Arial,sans-serif;text-align:center;border:1px solid #e0e0e0;">
+  <img src="https://hagotree.site/IMG/logo%202.png" width="100px">
+  <h1 style="font-size:20px;color:#222;margin-bottom:10px;">Mã xác nhận</h1>
+  <p style="font-size:14px;color:#555;margin-bottom:16px;">Đây là mã của bạn:</p>
+  <div style="font-size:24px;font-weight:bold;letter-spacing:4px;background:#f2f7f3;color:#222;padding:16px 0;border-radius:6px;margin-bottom:16px;">
+    ${otp}
+  </div>
+  <p style="font-size:12px;color:#d32f2f;margin-bottom:16px;"><strong>Không chia sẻ cho bất kỳ ai kể cả nhân viên Hago Tree.</strong></p>
+  <p style="font-size:12px;color:#888;">Gửi từ: <b>noreply@hagotree.site</b></p>
+</div>`,});
+
+  console.log("Email sent: %s", info.messageId);
+}
+
+
+function storeOTP(email, otp) {
+  otps[email] = {
+    code: otp,
+    expires: Date.now() + 5 * 60 * 1000 
+  };
+}
+function verifyOTP(email, inputOtp) {
+  const record = otps[email];
+  if (!record) return false;
+  if (Date.now() > record.expires) return false;
+  return record.code === inputOtp;
+}
+function generateOTP(length = 8) {
+  let digits = '0123456789';
+  let otp = '';
+  for (let i = 0; i < length; i++) {
+    otp += digits[Math.floor(Math.random() * 10)];
+  }
+  return otp;
+}
+app.post("/send-otp", async (req, res) => {
+  const { email } = req.body;
+  const otp = generateOTP();
+  storeOTP(email, otp);
+  await sendOTPEmail(email, otp);
+  res.status(200).json({ success: true, message: "OTP sent!" });
+
+});
+
+app.post("/verify-otp", (req, res) => {
+  const { email, otp } = req.body;
+  if (verifyOTP(email, otp)) {
+    res.status(200).json({ success: true, message: "OTP verified!" });
+
+  } else {
+   res.status(400).json({ success: false, message: "Invalid or expired OTP." });
+  }
+});
+
 
 
 app.post("/used-voucher", (req, res) => {
@@ -1069,8 +1143,6 @@ function decodeMimeWord(encoded) {
 // Route nhận file mp3
 app.post("/uploadmusic-byte/Post", upload2.single("mp3up"), (req, res, next) => {
   const file = req.file;
-
-  console.log("🟢 Đã nhận file:", file?.originalname);
   console.log("📦 req.body:", req.body);
 
   if (!file) {
