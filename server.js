@@ -1004,16 +1004,19 @@ app.post("/lg-60/Post", express.json(), (req, res) => {
       try {
         const users = JSON.parse(data);
 
-        if (users[email] && users[email].password === password) {
-          if(users[email].password === password){
-            res.status(200).send("OK");
-          }
-          else{
-            res.status(200).send("NO");
-          }
+        const emailInput = email.trim().toLowerCase();
+        const matchedEmail = Object.keys(users).find(
+          key => key.trim().toLowerCase() === emailInput
+        );
+        console.log("Login user:", email);
+        if (matchedEmail && users[matchedEmail].password === password) {
+          res.status(200).send("OK");
+        } else if (matchedEmail) {
+          res.status(200).send("NO");
         } else {
           res.status(200).send("NO EMAIL");
         }
+
       } catch (parseErr) {
         console.error("Error parsing JSON:", parseErr);
         res.status(500).send("Internal Server Error");
