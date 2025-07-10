@@ -606,12 +606,14 @@ app.post("/get-user", (req, res) => {
 app.post("/dang-ky", (req, res) => {
   const formData = req.body;
   console.log("Received Form Data:", formData);
+  formData.createdAt = new Date().toISOString();
 
   const filePath = path.join(
     __dirname,
     "public",
     "danh-sach-khach-hang-dang-ky.json"
   );
+
   fs.readFile(filePath, "utf8", (err, data) => {
     if (err && err.code !== "ENOENT") {
       console.error("Error reading file:", err);
@@ -627,13 +629,15 @@ app.post("/dang-ky", (req, res) => {
         return res.status(500).send("Error parsing JSON");
       }
     }
+
     json.push(formData);
+
     fs.writeFile(filePath, JSON.stringify(json, null, 2), (writeError) => {
       if (writeError) {
         console.error("Error writing file:", writeError);
         return res.status(500).send("Error writing file");
       }
-      res.status(201).send();
+      res.status(201).send("Đăng ký thành công");
     });
   });
 });
