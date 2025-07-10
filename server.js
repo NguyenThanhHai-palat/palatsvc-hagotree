@@ -390,7 +390,55 @@ app.post('/updatesp', (req, res) => {
   });
 });
 
+app.post("/update-user", (req, res) => {
+  const updateData = req.body;
 
+  if (!updateData.registerEmail) {
+    return res.status(400).json({ success: false, message: "Thiếu email để xác định người dùng" });
+  }
+
+  const filePath = path.join(
+    __dirname,
+    "public",
+    "danh-sach-khach-hang-dang-ky.json"
+  );
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Lỗi đọc file:", err);
+      return res.status(500).json({ success: false, message: "Lỗi đọc file người dùng" });
+    }
+
+    let users = [];
+    try {
+      users = JSON.parse(data);
+    } catch (parseErr) {
+      console.error("Lỗi parse JSON:", parseErr);
+      return res.status(500).json({ success: false, message: "Lỗi định dạng dữ liệu" });
+    }
+    const index = users.findIndex(u => u.registerEmail === updateData.registerEmail);
+    if (index === -1) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy người dùng" });
+    }
+    users[index].registerName = updateData.registerName || users[index].registerName;
+    users[index].sdt = updateData.sdt || users[index].sdt;
+    users[index].address = updateData.address || users[index].address;
+    if (updateData.registerPassword) {
+      users[index].registerPassword = updateData.registerPassword;
+      users[index].registerPasswordConfirm = updateData.registerPassword;
+    }
+
+    // Ghi lại file
+    fs.writeFile(filePath, JSON.stringify(users, null, 2), (writeErr) => {
+      if (writeErr) {
+        console.error("Lỗi ghi file:", writeErr);
+        return res.status(500).json({ success: false, message: "Không thể cập nhật dữ liệu" });
+      }
+
+      res.json({ success: true, message: "Cập nhật thành công" });
+    });
+  });
+});
 app.get("/get-posts", (req, res) => {
   const jsonPath = path.join(__dirname, "public", "upload-content.json");
 
