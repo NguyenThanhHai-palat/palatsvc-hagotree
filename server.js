@@ -555,11 +555,15 @@ app.post("/get-don-hang", (req, res) => {
 
 app.post("/s2", (req, res) => {
   const { version } = req.body;
-
+  const filePath = path.join(
+    __dirname,
+    "public",
+    "danh-sach-khach-hang-dang-ky.json"
+  );
   if (version !== "krcl-180210812368012841098769010238172") {
     return res.status(403).json({ message: "Sai mã version" });
   }
-  fs.readFile(__dirname + "/public/danh-sach-khach-hang-dang-ky.json.json", "utf-8", (err, data) => {
+  fs.readFile(filePath, "utf-8", (err, data) => {
     if (err) return res.status(500).json({ message: "Không đọc được file người dùng" });
 
     try {
