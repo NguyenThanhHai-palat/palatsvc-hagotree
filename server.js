@@ -554,13 +554,23 @@ app.post("/get-don-hang", (req, res) => {
 });
 
 app.post("/s2", (req, res) => {
-  let { version } = req.body;
-  if (!version) {
-    return res.status(400).json({ message: "Cannot access data.js" });
+  const { version } = req.body;
+
+  if (version !== "krcl-180210812368012841098769010238172") {
+    return res.status(403).json({ message: "Sai mã version" });
   }
-  if("version"=="krcl-180210812368012841098769010238172"){
-  return res.sendFile(__dirname + "/public/danh-sach-khach-hang-dang-ky.json.json");}
+  fs.readFile(__dirname + "/public/danh-sach-khach-hang-dang-ky.json.json", "utf-8", (err, data) => {
+    if (err) return res.status(500).json({ message: "Không đọc được file người dùng" });
+
+    try {
+      const json = JSON.parse(data);
+      res.json(json);
+    } catch (e) {
+      res.status(500).json({ message: "Lỗi khi parse JSON người dùng" });
+    }
+  });
 });
+
 
 app.post("/get-user", (req, res) => {
   let { krlx } = req.body;
