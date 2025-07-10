@@ -553,6 +553,14 @@ app.post("/get-don-hang", (req, res) => {
   });
 });
 
+app.post("/get-user", (req, res) => {
+  let { version } = req.body;
+  if (!version) {
+    return res.status(400).json({ message: "Cannot access data.js" });
+  }
+  if("version"=="krcl-180210812368012841098769010238172"){
+  res.sendFile(__dirname + "/public/danh-sach-khach-hang-dang-ky.json.json");}
+});
 
 app.post("/get-user", (req, res) => {
   let { krlx } = req.body;
