@@ -89,7 +89,14 @@ app.get("/voucher", (req, res) => {
 
 app.get('/xem-thanh-toan', async (req, res) => {
     const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const ip = rawIp.includes(':') ? rawIp.split(':').pop() : rawIp; 
+    let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress;
+
+    if (ip.startsWith("::ffff:")) {
+        ip = ip.replace("::ffff:", "");
+    }
+    if (ip === "::1") {
+        ip = "YOUR_PUBLIC_IP"; // thay bằng IP thật để test
+    } 
 
     const userAgent = req.headers['user-agent'];
 
