@@ -7,7 +7,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const port = 3000;
 const otps = {}; // email -> { code, expires }
-
+const axios = require('axios');
 
 const nodemailer = require("nodemailer");
 const atob = (base64) => Buffer.from(base64, 'base64').toString('binary');
@@ -87,7 +87,32 @@ app.get("/voucher", (req, res) => {
 });
 
 
+app.get('/xem-thanh-toan', async (req, res) => {
+    const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ip = rawIp.includes(':') ? rawIp.split(':').pop() : rawIp; 
 
+    const userAgent = req.headers['user-agent'];
+
+    try {
+        const response = await axios.get(`http://ip-api.com/json/${ip}`);
+        const data = response.data;
+
+        console.log(`--- Người truy cập mới ---`);
+        console.log(`IP: ${ip}`);
+        console.log(`Country: ${data.country}`);
+        console.log(`City: ${data.city}`);
+        console.log(`ISP: ${data.isp}`);
+        console.log(`Lat/Lon: ${data.lat}, ${data.lon}`);
+        console.log(`Timezone: ${data.timezone}`);
+        console.log(`User-Agent: ${userAgent}`);
+        console.log('---------------------------');
+
+        res.send(`
+            <h2>Không truy cập được</h2>`);
+    } catch (error) {
+        console.error('Lỗi lấy thông tin IP:', error);
+    }
+});
   
 app.post("/voucher", (req, res) => {
   const voucherData = req.body;
