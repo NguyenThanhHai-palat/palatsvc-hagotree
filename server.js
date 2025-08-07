@@ -513,7 +513,7 @@ app.post("/upload-post", uploadFields, (req, res) => {
     }
   }
 
-  const newId = `sp${posts.length + 1}`;
+  const newId = `sp_${new Date().toISOString().replace(/[-:.TZ]/g, '')}`;
 
   const post = {
     id: newId,
