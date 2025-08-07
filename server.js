@@ -11,6 +11,7 @@ const axios = require('axios');
 
 const nodemailer = require("nodemailer");
 const atob = (base64) => Buffer.from(base64, 'base64').toString('binary');
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, "public", "image");
@@ -42,6 +43,10 @@ const upload2 = multer({ storage: storage2 });
 const dataFilePath = path.join("./public/data.json");
 app.use(express.json({ limit: '25mb' }));
 const upload = multer({ storage: storage });
+const uploadFields = upload.fields([
+  { name: "mainImage", maxCount: 1 },
+  { name: "detailImages", maxCount: 10 },
+]);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
@@ -489,19 +494,20 @@ app.get("/get-posts", (req, res) => {
     }
   });
 });
-app.post("/upload-post", upload.single("image"), (req, res) => {
+app.post("/upload-post", uploadFields, (req, res) => {
   const { title, cost, content, tag } = req.body;
-  const file = req.file;
 
-  const imageFilename = file ? `/image/${file.filename}` : "";
-
+  const mainImageFile = req.files["mainImage"]?.[0];
+  const detailImageFiles = req.files["detailImages"] || [];
+  const detailImagePaths = detailImageFiles.map((f) => `/image/${f.filename}`);
+  const imageFilename = mainImageFile ? `/image/${mainImageFile.filename}` : "";
   const jsonPath = path.join(__dirname, "public", "sp.json");
   let posts = [];
 
   if (fs.existsSync(jsonPath)) {
-    const content = fs.readFileSync(jsonPath, "utf8");
     try {
-      posts = JSON.parse(content);
+      const jsonContent = fs.readFileSync(jsonPath, "utf8");
+      posts = JSON.parse(jsonContent);
     } catch (err) {
       console.error("Lỗi đọc JSON:", err);
     }
@@ -515,6 +521,7 @@ app.post("/upload-post", upload.single("image"), (req, res) => {
     content,
     cost,
     image: imageFilename,
+    detailImages: detailImageFiles.map((f) => `/image/${f.filename}`),
     tag_product: tag,
     createdAt: new Date().toISOString(),
   };
