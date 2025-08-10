@@ -638,6 +638,24 @@ app.post("/upload-html", upload3.single("htmlfile"), (req, res) => {
 app.get("/baiviet-load", (req, res) => {
   res.sendFile(__dirname + "/listbaiviet.json");
 });
+app.delete("/delete-baiviet/:filename", (req, res) => {
+  const fileName = req.params.filename;
+  const filePath = path.join(uploadDir, fileName);
+  const listPath = path.join(__dirname, "listbaiviet.json");
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "File không tồn tại" });
+  }
+  fs.unlinkSync(filePath);
+  let list = [];
+  if (fs.existsSync(listPath)) {
+    list = JSON.parse(fs.readFileSync(listPath, "utf-8"));
+    list = list.filter(item => item.file !== fileName);
+    fs.writeFileSync(listPath, JSON.stringify(list, null, 2));
+  }
+
+  res.json({ message: "Xóa thành công", file: fileName });
+});
 
 app.post("/get-don-hang", (req, res) => {
   const { email } = req.body;
