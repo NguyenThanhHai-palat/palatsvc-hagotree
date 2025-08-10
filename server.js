@@ -47,7 +47,7 @@ const storage3 = multer.diskStorage({
     cb(null, Date.now() + path.extname(file.originalname)); // Tên file = timestamp
   },
 });
-const upload3 = multer({ storage: storage });
+const upload3 = multer({ storage: storage3 });
 app.use((req, res, next) => {
   console.log(`[DEBUG] ${req.method} ${req.originalUrl}`);
   next();
