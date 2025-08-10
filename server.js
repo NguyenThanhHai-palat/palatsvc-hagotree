@@ -660,7 +660,8 @@ app.get("/list-baiviet-all", (req, res) => {
 
     result.push({
       title: item.title,
-      content: content
+      content: content,
+      filename: item.file
     });
   });
 
