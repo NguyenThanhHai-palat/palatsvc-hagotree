@@ -638,6 +638,29 @@ app.post("/upload-html", upload3.single("htmlfile"), (req, res) => {
 app.get("/baiviet-load", (req, res) => {
   res.sendFile(__dirname + "/listbaiviet.json");
 });
+app.get("/baiviet/:id", (req, res) => {
+  const id = req.params.id;
+  const listPath = path.join(__dirname, "list.json");
+  const uploadDir = path.join(__dirname, "baiviet");
+
+  if (!fs.existsSync(listPath)) {
+    return res.status(404).send("Không tìm thấy danh sách bài viết");
+  }
+
+  const list = JSON.parse(fs.readFileSync(listPath, "utf-8"));
+  const post = list.find(item => item.file === id);
+
+  if (!post) {
+    return res.status(404).send("Không tìm thấy bài viết");
+  }
+
+  const filePath = path.join(uploadDir, post.file);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send("File bài viết không tồn tại");
+  }
+
+  res.sendFile(filePath);
+});
 app.delete("/delete-baiviet/:filename", (req, res) => {
   const fileName = req.params.filename;
   const filePath = path.join(uploadDir, fileName);
