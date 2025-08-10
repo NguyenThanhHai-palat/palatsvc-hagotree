@@ -636,7 +636,7 @@ app.post("/upload-html", upload3.single("htmlfile"), (req, res) => {
   res.json({ message: "Upload thành công", file: fileName, title });
 });
 app.get("/baiviet-load", (req, res) => {
-  res.sendFile(__dirname + "listbaiviet.json");
+  res.sendFile(__dirname + "/listbaiviet.json");
 });
 
 app.post("/get-don-hang", (req, res) => {
