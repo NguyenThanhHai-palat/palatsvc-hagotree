@@ -640,7 +640,7 @@ app.get("/baiviet-load", (req, res) => {
 });
 app.get("/baiviet/:id", (req, res) => {
   const id = req.params.id;
-  const listPath = path.join(__dirname, "list.json");
+  const listPath = path.join(__dirname, "listbaiviet.json");
   const uploadDir = path.join(__dirname, "baiviet");
 
   if (!fs.existsSync(listPath)) {
