@@ -35,6 +35,19 @@ const storage2 = multer.diskStorage({
     cb(null, file.originalname); // Tên file sẽ giữ nguyên
   },
 });
+const uploadDir = path.join(__dirname, "baiviet");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+const storage3 = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Tên file = timestamp
+  },
+});
+const upload3 = multer({ storage: storage });
 app.use((req, res, next) => {
   console.log(`[DEBUG] ${req.method} ${req.originalUrl}`);
   next();
@@ -603,6 +616,27 @@ app.post("/dat-hang", (req, res) => {
       res.send({ message: "Form data received and saved" });
     });
   });
+});
+app.post("/upload-html", upload3.single("htmlfile"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Không có file nào được upload" });
+  if (!req.body.title) return res.status(400).json({ error: "Thiếu title" });
+
+  const fileName = req.file.filename;
+  const title = req.body.title;
+  const listPath = path.join(__dirname, "listbaiviet.json");
+
+  let list = [];
+  if (fs.existsSync(listPath)) {
+    list = JSON.parse(fs.readFileSync(listPath, "utf-8"));
+  }
+
+  list.push({ title, file: fileName });
+  fs.writeFileSync(listPath, JSON.stringify(list, null, 2));
+
+  res.json({ message: "Upload thành công", file: fileName, title });
+});
+app.get("/baiviet-load", (req, res) => {
+  res.sendFile(__dirname + "listbaiviet.json");
 });
 
 app.post("/get-don-hang", (req, res) => {
