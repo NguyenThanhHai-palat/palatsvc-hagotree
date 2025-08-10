@@ -638,6 +638,36 @@ app.post("/upload-html", upload3.single("htmlfile"), (req, res) => {
 app.get("/baiviet-load", (req, res) => {
   res.sendFile(__dirname + "/listbaiviet.json");
 });
+
+app.get("/list-baiviet-all", (req, res) => {
+  const listPath = path.join(__dirname, "listbaiviet.json");
+  const uploadDir = path.join(__dirname, "baiviet");
+
+  if (!fs.existsSync(listPath)) {
+    return res.json([]);
+  }
+
+  const list = JSON.parse(fs.readFileSync(listPath, "utf-8"));
+  const result = [];
+
+  list.forEach(item => {
+    const filePath = path.join(uploadDir, item.file);
+    let content = "";
+
+    if (fs.existsSync(filePath)) {
+      content = fs.readFileSync(filePath, "utf-8");
+    }
+
+    result.push({
+      title: item.title,
+      content: content
+    });
+  });
+
+  res.json(result);
+});
+
+
 app.get("/baiviet/:id", (req, res) => {
   const id = req.params.id;
   const listPath = path.join(__dirname, "listbaiviet.json");
