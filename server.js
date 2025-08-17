@@ -631,7 +631,8 @@ app.post("/upload-html", upload3.single("htmlfile"), (req, res) => {
     list = JSON.parse(fs.readFileSync(listPath, "utf-8"));
   }
 
-  list.push({ title, file: fileName });
+  list.push({ title, descript, file: fileName });
+
   fs.writeFileSync(listPath, JSON.stringify(list, null, 2));
 
   res.json({ message: "Upload thành công", file: fileName, title });
