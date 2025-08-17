@@ -623,6 +623,7 @@ app.post("/upload-html", upload3.single("htmlfile"), (req, res) => {
 
   const fileName = req.file.filename;
   const title = req.body.title;
+  const descript = req.body.descript;
   const listPath = path.join(__dirname, "listbaiviet.json");
 
   let list = [];
@@ -660,6 +661,7 @@ app.get("/list-baiviet-all", (req, res) => {
 
     result.push({
       title: item.title,
+      descript: item.descript
       content: content,
       filename: item.file
     });
