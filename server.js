@@ -661,7 +661,7 @@ app.get("/list-baiviet-all", (req, res) => {
 
     result.push({
       title: item.title,
-      descript: item.descript
+      descript: item.descript,
       content: content,
       filename: item.file
     });
