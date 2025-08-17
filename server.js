@@ -625,13 +625,13 @@ app.post("/upload-html", upload3.single("htmlfile"), (req, res) => {
   const title = req.body.title;
   const descript = req.body.descript;
   const listPath = path.join(__dirname, "listbaiviet.json");
-
+  const createdAt = new Date().toISOString();
   let list = [];
   if (fs.existsSync(listPath)) {
     list = JSON.parse(fs.readFileSync(listPath, "utf-8"));
   }
 
-  list.push({ title, descript, file: fileName });
+  list.push({ title, descript, file: fileName,createdAt });
 
   fs.writeFileSync(listPath, JSON.stringify(list, null, 2));
 
@@ -664,7 +664,8 @@ app.get("/list-baiviet-all", (req, res) => {
       title: item.title,
       descript: item.descript,
       content: content,
-      filename: item.file
+      filename: item.file,
+      createdAt: item.createdAt
     });
   });
 
