@@ -104,6 +104,38 @@ app.get("/voucher", (req, res) => {
  res.sendFile(__dirname + "/public/voucher.json");
 });
 
+app.post("/update-point", (req, res) => {
+  const { email, gameId, newPoint } = req.body;
+
+  if (!email || !gameId || newPoint === undefined) {
+    return res.status(400).json({ error: "failed" });
+  }
+
+  let data = {};
+  if (fs.existsSync(path.join(__dirname, "private", "listpointplayer.json"))) {
+    data = JSON.parse(fs.readFileSync(path.join(__dirname, "private", "listpointplayer.json")));
+  }
+
+  if (!data[email]) {
+    data[email] = {};
+  }
+
+  data[email][gameId] = newPoint;
+
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+
+  return res.json({ success: true, data: data[email] });
+});
+app.get("/points/:email", (req, res) => {
+  const email = req.params.email;
+
+  let data = {};
+  if (fs.existsSync(path.join(__dirname, "private", "listpointplayer.json"))) {
+    data = JSON.parse(fs.readFileSync(path.join(__dirname, "private", "listpointplayer.json")));
+  }
+
+  return res.json({ email, points: data[email] || {} });
+});
 
 app.get('/xem-thanh-toan', async (req, res) => {
     const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
