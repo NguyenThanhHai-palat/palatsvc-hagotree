@@ -216,7 +216,7 @@ app.post("/update-point", (req, res) => {
     data[email] = {};
   }
 
-  data[email][gameId] = newPoint;
+  data[email] = newPoint;
 
   fs.writeFileSync(path.join(__dirname, "private", "listpointplayer.json"), JSON.stringify(data, null, 2));
 
