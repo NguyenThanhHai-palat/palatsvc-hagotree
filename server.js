@@ -8,7 +8,7 @@ const app = express();
 const port = 3000;
 const otps = {}; // email -> { code, expires }
 const axios = require('axios');
-
+const xlsx = require("xlsx");
 const nodemailer = require("nodemailer");
 const atob = (base64) => Buffer.from(base64, 'base64').toString('binary');
 
@@ -83,7 +83,56 @@ app.get("/image/:name", (req, res) => {
     res.sendFile(filePath);
   });
 });
+app.post("/upload-questions", upload2.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
+  const workbook = xlsx.readFile(req.file.path);
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows = xlsx.utils.sheet_to_json(sheet);
+
+  let data = {};
+
+  rows.forEach(row => {
+    const made = row["made"];
+    if (!data[made]) data[made] = [];
+    data[made].push({
+      question: row["question"],
+      options: [row["A"], row["B"], row["C"], row["D"]],
+      answer: row["answer"] 
+    });
+  });
+
+  fs.writeFileSync(path.join(__dirname, "private", "questions.json"), JSON.stringify(data, null, 2));
+  res.json({ success: true, codes: Object.keys(data) });
+});
+
+app.get("/get-de-game/:made", (req, res) => {
+  const file = path.join(__dirname, "private", "questions.json");
+  if (!fs.existsSync(file)) return res.status(404).json({ error: "No questions" });
+  const data = JSON.parse(fs.readFileSync(file));
+  const made = req.params.made;
+  if (!data[made]) return res.status(404).json({ error: "Invalid made" });
+  res.json(data[made].map(q => ({
+    question: q.question,
+    options: q.options
+  })));
+});
+
+app.post("/checkvar-gamecauhoi", (req, res) => {
+  const { made, answers } = req.body;
+  const file = path.join(__dirname, "private", "questions.json");
+  if (!fs.existsSync(file)) return res.status(404).json({ error: "No questions" });
+  const data = JSON.parse(fs.readFileSync(file));
+  const questions = data[made];
+  if (!questions) return res.status(400).json({ error: "Invalid made" });
+
+  let score = 0;
+  questions.forEach((q, i) => {
+    if (q.answer === q.options[answers[i]]) score++;
+  });
+
+  res.json({ score, total: questions.length });
+});
 app.get("/", (req, res) => {
   res.status(201).json({ message: "SERVER - HAGOTREE - PALAT SERVICE  -  v:1.1" });
 });
