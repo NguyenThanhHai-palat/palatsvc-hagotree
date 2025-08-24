@@ -83,26 +83,39 @@ app.get("/image/:name", (req, res) => {
     res.sendFile(filePath);
   });
 });
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
 app.post("/upload-questions", upload2.single("file"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-
   const workbook = xlsx.readFile(req.file.path);
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const rows = xlsx.utils.sheet_to_json(sheet);
 
   let data = {};
 
-  rows.forEach(row => {
-    const made = row["made"];
+  rows.forEach((row) => {
+    const made = row["MaDe"] ? String(row["MaDe"]).trim() : "default";
+
     if (!data[made]) data[made] = [];
+    const allOptions = shuffle([
+      { text: row["answer"], correct: true },
+      { text: row["Đáp án nhiễu 1"], correct: false },
+      { text: row["Đáp án nhiễu 2"], correct: false },
+      { text: row["Đáp án nhiễu 3"], correct: false }
+    ]);
+
     data[made].push({
       question: row["question"],
-      options: [row["A"], row["B"], row["C"], row["D"]],
-      answer: row["answer"] 
+      options: allOptions
     });
   });
 
-  fs.writeFileSync(path.join(__dirname, "private", "questions.json"), JSON.stringify(data, null, 2));
+  fs.writeFileSync(
+    path.join(__dirname, "private", "questions.json"),
+    JSON.stringify(data, null, 2),
+    "utf-8"
+  );
+
   res.json({ success: true, codes: Object.keys(data) });
 });
 
