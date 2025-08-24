@@ -134,18 +134,28 @@ app.get("/get-de-game/:made", (req, res) => {
 app.post("/checkvar-gamecauhoi", (req, res) => {
   const { made, answers } = req.body;
   const file = path.join(__dirname, "private", "questions.json");
-  if (!fs.existsSync(file)) return res.status(404).json({ error: "No questions" });
+
+  if (!fs.existsSync(file)) 
+    return res.status(404).json({ error: "No questions" });
+
   const data = JSON.parse(fs.readFileSync(file));
   const questions = data[made];
-  if (!questions) return res.status(400).json({ error: "Invalid made" });
+
+  if (!questions) 
+    return res.status(400).json({ error: "Invalid made" });
 
   let score = 0;
+
   questions.forEach((q, i) => {
-    if (q.answer === q.options[answers[i]]) score++;
+    const chosenIndex = answers[i]; 
+    if (q.options[chosenIndex] && q.options[chosenIndex].correct) {
+      score++;
+    }
   });
 
   res.json({ score, total: questions.length });
 });
+
 app.get("/", (req, res) => {
   res.status(201).json({ message: "SERVER - HAGOTREE - PALAT SERVICE  -  v:1.1" });
 });
