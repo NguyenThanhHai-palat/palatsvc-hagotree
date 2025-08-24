@@ -131,6 +131,25 @@ app.get("/get-de-game/:made", (req, res) => {
   })));
 });
 
+app.get("/getvar-gamecauhoi", (req, res) => {
+  const file = path.join(__dirname, "private", "questions.json");
+  if (!fs.existsSync(file)) return res.status(404).json({ error: "No questions" });
+
+  const data = JSON.parse(fs.readFileSync(file));
+  const madeKeys = Object.keys(data);
+  const made = madeKeys[Math.floor(Math.random() * madeKeys.length)];
+  let questions = [...data[made]];
+  questions = questions.sort(() => Math.random() - 0.5);
+  questions = questions.map(q => {
+    const opts = [...q.options].sort(() => Math.random() - 0.5);
+    return {
+      question: q.question,
+      options: opts.map(o => o.text)
+    };
+  });
+
+  res.json({ made, questions });
+});
 app.post("/checkvar-gamecauhoi", (req, res) => {
   const { made, answers } = req.body;
   const file = path.join(__dirname, "private", "questions.json");
