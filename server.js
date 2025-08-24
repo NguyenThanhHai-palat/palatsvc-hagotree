@@ -86,6 +86,12 @@ app.get("/image/:name", (req, res) => {
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
 }
+app.get("/voucher-gameevent", (req, res) => {
+  const all = JSON.parse(fs.readFileSync(__dirname + "/public/voucher.json"));
+  const gameevent = all.filter(v => v.voucherName === "GAMEEVENT");
+  res.json(gameevent);
+});
+
 app.post("/upload-questions", upload2.single("file"), (req, res) => {
   const workbook = xlsx.readFile(req.file.path);
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
