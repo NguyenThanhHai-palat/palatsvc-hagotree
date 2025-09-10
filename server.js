@@ -188,6 +188,13 @@ app.get("/sapxepchongoi", (req, res) => {
     res.status(404).json({ error: "File not found" });
   }
 });
+app.post("/sapxepchongoi", (req, res) => {
+  const content = req.body;
+  const filePath = path.join(__dirname, "public", "sapxepchongoi.json");
+  fs.writeFileSync(filePath, JSON.stringify(content, null, 2), "utf-8");
+
+  res.json({ success: true, message: " Da Tao Thanh Cong" });
+});
 
 
 app.get("/", (req, res) => {
