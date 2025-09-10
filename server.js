@@ -179,13 +179,16 @@ app.post("/checkvar-gamecauhoi", (req, res) => {
 
   res.json({ score, total: questions.length });
 });
-app.post("/sapxepchongoi", (req, res) => {
-  const content = req.body;
+app.get("/sapxepchongoi", (req, res) => {
   const filePath = path.join(__dirname, "public", "sapxepchongoi.json");
-  fs.writeFileSync(filePath, content, "utf-8");
-
-  res.json({ success: true, message: " Da Tao Thanh Cong" });
+  if (fs.existsSync(filePath)) {
+    const data = fs.readFileSync(filePath, "utf-8");
+    res.type("application/json").send(data);
+  } else {
+    res.status(404).json({ error: "File not found" });
+  }
 });
+
 
 app.get("/", (req, res) => {
   res.status(201).json({ message: "SERVER - HAGOTREE - PALAT SERVICE  -  v:1.1" });
