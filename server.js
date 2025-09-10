@@ -179,12 +179,22 @@ app.post("/checkvar-gamecauhoi", (req, res) => {
 
   res.json({ score, total: questions.length });
 });
+app.post("/sapxepchongoi", (req, res) => {
+  const content = req.body;
+  const filePath = path.join(__dirname, "public", "sapxepchongoi.json");
+  fs.writeFileSync(filePath, content, "utf-8");
+
+  res.json({ success: true, message: " Da Tao Thanh Cong" });
+});
 
 app.get("/", (req, res) => {
   res.status(201).json({ message: "SERVER - HAGOTREE - PALAT SERVICE  -  v:1.1" });
 });
 app.get("/dh", (req, res) => {
   res.sendFile(__dirname + "/public/don-hang.json");
+});
+app.get("/dschongoi", (req, res) => {
+  res.sendFile(__dirname + "/public/sapxepchongoi.json");
 });
 app.get("/fb", (req, res) => {
   res.sendFile(__dirname + "/public/feedback.json");
@@ -266,7 +276,7 @@ app.get('/xem-thanh-toan', async (req, res) => {
         console.error('Lỗi lấy thông tin IP:', error);
     }
 });
-  
+
 app.post("/voucher", (req, res) => {
   const voucherData = req.body;
   const filePath = path.join(__dirname, "public", "voucher.json");
