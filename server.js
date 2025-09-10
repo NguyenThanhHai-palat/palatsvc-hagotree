@@ -179,7 +179,7 @@ app.post("/checkvar-gamecauhoi", (req, res) => {
 
   res.json({ score, total: questions.length });
 });
-app.get("/sapxepchongoi", (req, res) => {
+app.get("/sapxepchongoi2", (req, res) => {
   const filePath = path.join(__dirname, "public", "sapxepchongoi.json");
   if (fs.existsSync(filePath)) {
     const data = fs.readFileSync(filePath, "utf-8");
