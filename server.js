@@ -92,6 +92,39 @@ app.get("/voucher-gameevent", (req, res) => {
   res.json(gameevent);
 });
 
+
+app.post("/dat-hang-tx12a2", (req, res) => {
+  const formData = req.body;
+  console.log("Received Form Data:", formData);
+
+  const filePath = path.join(__dirname, "public", "checkout12a2.json");
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err && err.code !== "ENOENT") {
+      console.error("Error reading file:", err);
+      return res.status(500).send("Error reading file");
+    }
+
+    let json = [];
+    if (data) {
+      try {
+        json = JSON.parse(data);
+      } catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+        return res.status(500).send("Error parsing JSON");
+      }
+    }
+    json.push(formData);
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), (writeError) => {
+      if (writeError) {
+        console.error("Error writing file:", writeError);
+        return res.status(500).send("Error writing file");
+      }
+      console.log("Form data saved to wait.json");
+      res.send({ message: "Form data received and saved" });
+    });
+  });
+});
+
 app.post("/upload-questions", upload2.single("file"), (req, res) => {
   const workbook = xlsx.readFile(req.file.path);
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -765,6 +798,10 @@ app.post("/dat-hang", (req, res) => {
     });
   });
 });
+
+
+
+
 app.post("/upload-html", upload3.single("htmlfile"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Không có file nào được upload" });
   if (!req.body.title) return res.status(400).json({ error: "Thiếu title" });
