@@ -120,10 +120,53 @@ app.post("/dat-hang-tx12a2", (req, res) => {
         return res.status(500).send("Error writing file");
       }
       console.log("Form data saved to wait.json");
-      res.send({ message: "Form data received and saved" });
+      return res.status(200).send("Form data received and saved");
     });
   });
 });
+app.post('/getidticket2a2', (req, res) => {
+  const { id_show } = req.body;
+
+  if (!id_show) {
+    return res.status(400).json({
+      success: false,
+      message: 'Thiếu id_show'
+    });
+  }
+
+  const filePath = path.join(__dirname, 'public', 'checkout12a2.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Không đọc được dữ liệu'
+      });
+    }
+
+    const records = JSON.parse(data);
+
+    const result = records.find(
+      item =>
+        item.id_show === id_show &&
+        item.name &&
+        item.email
+    );
+
+    if (!result) {
+      return res.json({
+        success: false,
+        message: 'Không tìm thấy dữ liệu cho id_show này'
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: result
+    });
+  });
+});
+
 
 app.post("/upload-questions", upload2.single("file"), (req, res) => {
   const workbook = xlsx.readFile(req.file.path);
