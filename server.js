@@ -133,7 +133,7 @@ app.post("/service/uploading", uploadservice.single("file"), (req, res) => {
 });
 
 app.post("/service/download", (req, res) => {
-  const { file, key } = req.body;
+  const { file, key } = req.body || {};
 
   if (!file || !key) {
     return res.status(400).json({ message: "Thiếu file hoặc key" });
@@ -142,17 +142,25 @@ app.post("/service/download", (req, res) => {
   const data = loadDataK();
   const record = data[file];
 
+  // check quyền trước
   if (!record || record.key !== key) {
     return res.status(403).json({ message: "Không có quyền truy cập file" });
   }
 
-  if (!fs.existsSync(record.filePath)) {
+  // luôn build path từ thư mục upload_service
+  const filePath = path.join(__dirname, "upload_service", file);
+
+  // chặn path traversal
+  if (!filePath.startsWith(path.join(__dirname, "upload_service"))) {
+    return res.status(400).json({ message: "Tên file không hợp lệ" });
+  }
+
+  if (!fs.existsSync(filePath)) {
     return res.status(410).json({ message: "File không tồn tại" });
   }
 
-  res.download(record.filePath, file);
+  res.download(filePath, file);
 });
-
 
 
 
