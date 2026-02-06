@@ -38,13 +38,16 @@ const storage2 = multer.diskStorage({
 
   
 const storageSVC = multer.diskStorage({
-  destination: "upload_service/",
+  destination: function (req, file, cb) {
+    const dest = path.join(__dirname, "upload_service"); 
+    cb(null, dest); 
+  },
   filename: (req, file, cb) => {
-    cb(null, file.originalname); // giữ nguyên tên
+    cb(null, file.originalname); 
   }
 });
 
-const uploadservice = multer({ storageSVC });
+const uploadservice = multer({ storage: storageSVC });
 
 const DATA_FILE_SERVICE_UPLOAD = "data_upload_service.json";
 
