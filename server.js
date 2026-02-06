@@ -163,7 +163,32 @@ app.post("/service/download", (req, res) => {
 });
 
 
+app.post("/service/view", (req, res) => {
+  const { file, key } = req.body || {};
 
+  if (!file || !key) {
+    return res.status(400).json({ message: "Thiếu file hoặc key" });
+  }
+
+  const data = loadDataK();
+  const record = data[file];
+
+  if (!record || record.key !== key) {
+    return res.status(403).json({ message: "Không có quyền truy cập file" });
+  }
+
+  const filePath = path.join(__dirname, "upload_service", file);
+
+  if (!filePath.startsWith(path.join(__dirname, "upload_service"))) {
+    return res.status(400).json({ message: "Tên file không hợp lệ" });
+  }
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(410).json({ message: "File không tồn tại" });
+  }
+
+  res.sendFile(filePath);
+});
 
 
 
