@@ -49,7 +49,51 @@ const storageSVC = multer.diskStorage({
 
 const uploadservice = multer({ storage: storageSVC });
 
-const DATA_FILE_SERVICE_UPLOAD = "data_upload_service.json";
+const DATA_FILE_SERVICE_UPLOAD = path.join("./data_upload_service.json");
+
+
+
+const uploadDir = path.join(__dirname, "baiviet");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+const storage3 = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Tên file = timestamp
+  },
+});
+const upload3 = multer({ storage: storage3 });
+app.use((req, res, next) => {
+  console.log(`[DEBUG] ${req.method} ${req.originalUrl}`);
+  next();
+});
+const upload2 = multer({ storage: storage2 });
+const dataFilePath = path.join("./public/data.json");
+app.use(express.json({ limit: '25mb' }));
+const upload = multer({ storage: storage });
+const uploadFields = upload.fields([
+  { name: "mainImage", maxCount: 1 },
+  { name: "detailImages", maxCount: 10 },
+]);
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+
+
+
 
 const loadDataK = () => {
   if (!fs.existsSync(DATA_FILE_SERVICE_UPLOAD)) return {};
@@ -78,7 +122,6 @@ app.post("/service/uploading", uploadservice.single("file"), (req, res) => {
   data[fileName] = {
     id,
     key,
-    filePath: req.file.path
   };
 
   saveDataK(data);
@@ -113,43 +156,10 @@ app.post("/service/download", (req, res) => {
 
 
 
-const uploadDir = path.join(__dirname, "baiviet");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-const storage3 = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Tên file = timestamp
-  },
-});
-const upload3 = multer({ storage: storage3 });
-app.use((req, res, next) => {
-  console.log(`[DEBUG] ${req.method} ${req.originalUrl}`);
-  next();
-});
-const upload2 = multer({ storage: storage2 });
-const dataFilePath = path.join("./public/data.json");
-app.use(express.json({ limit: '25mb' }));
-const upload = multer({ storage: storage });
-const uploadFields = upload.fields([
-  { name: "mainImage", maxCount: 1 },
-  { name: "detailImages", maxCount: 10 },
-]);
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
+
+
+
+
 
 app.get("/image/:name", (req, res) => {
   const fileName = req.params.name;
