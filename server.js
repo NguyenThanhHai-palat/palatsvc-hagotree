@@ -35,6 +35,81 @@ const storage2 = multer.diskStorage({
     cb(null, file.originalname); // Tên file sẽ giữ nguyên
   },
 });
+
+  
+const storageSVC = multer.diskStorage({
+  destination: "upload_service/",
+  filename: (req, file, cb) => {
+    cb(null, file.originalname); // giữ nguyên tên
+  }
+});
+
+const uploadservice = multer({ storageSVC });
+
+const DATA_FILE_SERVICE_UPLOAD = "data_upload_service.json";
+
+const loadDataK = () => {
+  if (!fs.existsSync(DATA_FILE_SERVICE_UPLOAD)) return {};
+  return JSON.parse(fs.readFileSync(DATA_FILE_SERVICE_UPLOAD));
+};
+
+const saveDataK = (data) => {
+  fs.writeFileSync(
+    DATA_FILE_SERVICE_UPLOAD,
+    JSON.stringify(data, null, 2)
+  );
+};
+
+
+app.post("/service/uploading", uploadservice.single("file"), (req, res) => {
+  const { id, key } = req.body;
+
+  if (!id || !key || !req.file) {
+    return res.status(400).json({ message: "Thiếu id, key hoặc file" });
+  }
+
+  const data = loadDataK();
+  const fileName = req.file.originalname;
+
+  // update hoặc tạo mới theo tên file
+  data[fileName] = {
+    id,
+    key,
+    filePath: req.file.path
+  };
+
+  saveDataK(data);
+
+  res.json({
+    message: "Upload / Update file thành công",
+    file: fileName
+  });
+});
+
+app.post("/service/download", (req, res) => {
+  const { file, key } = req.body;
+
+  if (!file || !key) {
+    return res.status(400).json({ message: "Thiếu file hoặc key" });
+  }
+
+  const data = loadDataK();
+  const record = data[file];
+
+  if (!record || record.key !== key) {
+    return res.status(403).json({ message: "Không có quyền truy cập file" });
+  }
+
+  if (!fs.existsSync(record.filePath)) {
+    return res.status(410).json({ message: "File không tồn tại" });
+  }
+
+  res.download(record.filePath, file);
+});
+
+
+
+
 const uploadDir = path.join(__dirname, "baiviet");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
