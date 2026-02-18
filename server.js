@@ -192,6 +192,75 @@ app.post("/service/view", (req, res) => {
 
 
 
+app.post("/palatstore/login", (req, res) => {
+  const formData = req.body;
+  const {useremail} = req.body
+  const {pass} = req.body
+  console.log("Received Palat Store:", formData);
+  const filePath = path.join(
+    __dirname,
+    "public",
+    "palatstoreuser.json"
+  );
+  fs.readFile(filePath, "utf-8", (err, data) => {
+    if (err) return res.status(500).json({ error: "Lỗi đọc file dữ liệu" });
+
+    let users;
+    try {
+      users = JSON.parse(data);
+    } catch (parseErr) {
+      return res.status(500).json({ error: "Lỗi phân tích JSON" });
+    }
+
+    const user = users.find(
+      (u) =>
+        u.useremail === useremail && u.pass === pass
+    );
+
+    if (user) {
+      return res.status(201).json({ error: "OK" });;
+    } else {
+      return res.status(401).json({ message: "Sai email hoặc mật khẩu" });
+    }
+  });
+});
+app.post("/palatstore/register", (req, res) => {
+  const formData = req.body;
+  console.log("Received Palat Store:", formData);
+  formData.createdAt = new Date().toISOString();
+  const filePath = path.join(
+    __dirname,
+    "public",
+    "palatstoreuser.json"
+  );
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err && err.code !== "ENOENT") {
+      console.error("Error reading file:", err);
+      return res.status(500).send("Error reading file");
+    }
+
+    let json = [];
+    if (data) {
+      try {
+        json = JSON.parse(data);
+      } catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+        return res.status(500).send("Error parsing JSON");
+      }
+    }
+
+    json.push(formData);
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), (writeError) => {
+      if (writeError) {
+        console.error("Error writing file:", writeError);
+        return res.status(500).send("Error writing file");
+      }
+      res.status(201).send("Đăng ký thành công");
+    });
+  });
+});
 
 
 app.get("/image/:name", (req, res) => {
