@@ -1985,6 +1985,70 @@ app.post("/palat-payment/sepayhook", (req, res) => {
     });
   });
 });
+app.get("/checkpayment", (req, res) => {
+  const code = req.query.code;
+  const amount = parseInt(req.query.amount);
+
+  if (!code || !amount) {
+    return res.status(201).json({
+      success: false,
+      message: "Thiếu mã giao dịch hoặc số tiền"
+    });
+  }
+
+  const filePath = path.join(__dirname, "public", "payment.json");
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      return res.status(201).json({
+        success: false,
+        message: "Không đọc được dữ liệu"
+      });
+    }
+
+    let json = [];
+    try {
+      json = JSON.parse(data);
+    } catch (e) {
+      return res.status(201).json({
+        success: false,
+        message: "Lỗi JSON"
+      });
+    }
+
+    // 🔎 tìm giao dịch
+    const found = json.find(item => {
+      const text = (item.content || "") + " " + (item.description || "");
+      return text.includes(code);
+    });
+
+    if (!found) {
+      return res.status(201).json({
+        success: false,
+        message: "Chưa tìm thấy giao dịch"
+      });
+    }
+    if (parseInt(found.transferAmount) === amount) {
+      return res.status(200).json({
+        success: true,
+        message: "Thanh toán thành công",
+        data: {
+          code: code,
+          amount: amount,
+          bank: found.gateway,
+          time: found.transactionDate
+        }
+      });
+    } else {
+      return res.status(201).json({
+        success: false,
+        message: "Sai số tiền",
+        expected: amount,
+        actual: found.transferAmount
+      });
+    }
+  });
+});
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
