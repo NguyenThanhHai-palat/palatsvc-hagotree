@@ -1947,7 +1947,44 @@ app.get("/music-get/:name", (req, res) => {
   });
 });
 
+app.post("/palat-payment/sepayhook	", (req, res) => {
+  const formData = req.body;
+  console.log("Received Form Data:", formData);
+  formData.createdAt = new Date().toISOString();
 
+  const filePath = path.join(
+    __dirname,
+    "public",
+    "payment.json"
+  );
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err && err.code !== "ENOENT") {
+      console.error("Error reading file:", err);
+      return res.status(500).send("Error reading file");
+    }
+
+    let json = [];
+    if (data) {
+      try {
+        json = JSON.parse(data);
+      } catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+        return res.status(500).send("Error parsing JSON");
+      }
+    }
+
+    json.push(formData);
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), (writeError) => {
+      if (writeError) {
+        console.error("Error writing file:", writeError);
+        return res.status(500).send("Error writing file");
+      }
+      res.status(201).send("OK");
+    });
+  });
+});
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
