@@ -2049,6 +2049,69 @@ app.get("/checkpayment", (req, res) => {
     }
   });
 });
+app.get("/palat-payment/khachhang", (req, res) => {
+  const keyword = req.query.code;
+  const filePath = path.join(__dirname, "public", "payment.json");
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      return res.send("<h2>Lỗi đọc file</h2>");
+    }
+
+    let json = [];
+    try {
+      json = JSON.parse(data);
+    } catch (e) {
+      return res.send("<h2>Lỗi JSON</h2>");
+    }
+    let filtered = json.filter(item => {
+      const text = (item.content || "") + " " + (item.description || "");
+      return text.includes(keyword);
+    });
+
+    filtered.sort((a, b) => {
+      return new Date(b.transactionDate) - new Date(a.transactionDate);
+    });
+
+    let rows = filtered.map(item => `
+      <tr>
+        <td>${item.transactionDate}</td>
+        <td>${item.gateway}</td>
+        <td>${item.transferAmount} VND</td>
+        <td>${item.content}</td>
+      </tr>
+    `).join("");
+
+    const html = `
+    <html>
+    <head>
+      <title>Danh sách giao dịch</title>
+      <style>
+        body { font-family: Arial; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        tr:hover { background-color: #f9f9f9; }
+      </style>
+    </head>
+    <body>
+      <h2> Giao dịch chứa "${keyword}"</h2>
+      <table>
+        <tr>
+          <th>Thời gian</th>
+          <th>Ngân hàng</th>
+          <th>Số tiền</th>
+          <th>Nội dung</th>
+        </tr>
+        ${rows || "<tr><td colspan='4'>Không có dữ liệu</td></tr>"}
+      </table>
+    </body>
+    </html>
+    `;
+
+    res.send(html);
+  });
+});
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
