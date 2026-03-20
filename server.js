@@ -1947,7 +1947,7 @@ app.get("/music-get/:name", (req, res) => {
   });
 });
 
-app.post("/palat-payment/sepayhook	", (req, res) => {
+app.post("/palat-payment/sepayhook", (req, res) => {
   const formData = req.body;
   console.log("Received Form Data:", formData);
   formData.createdAt = new Date().toISOString();
