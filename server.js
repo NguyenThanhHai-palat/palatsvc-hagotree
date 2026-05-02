@@ -170,7 +170,7 @@ app.get("/service/2/namhaclub", (req, res) => {
     const users = JSON.parse(fs.readFileSync(filePathx));
     const user = users.find(u => u.id === decoded.id);
 
-    res.json({ id: user.id, email: user.email, class: user.classes, year_study: user.yearstudy });
+    res.json({ name: user.name,id: user.id, email: user.email, class: user.classes, year_study: user.yearstudy });
   } catch (err) {
     res.status(401).json({ message: "Token has expired." });
   }
