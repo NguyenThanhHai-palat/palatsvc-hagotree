@@ -155,6 +155,46 @@ app.post("/service/2/namhaclub/login", async (req, res) => {
   res.json({ token });
 });
 
+app.post('/exam/result', (req, res) => {
+    const newResult = req.body; 
+    newResult.timestamp = new Date().toISOString();
+    const filePathx1 = path.join(
+    __dirname,
+    "public",
+    "examhistory.json"
+  );
+    fs.readFile(filePathx1, 'utf8', (err, data) => {
+        let json = [];
+        if (!err && data) {
+            json = JSON.parse(data);
+        }
+        
+        json.push(newResult);
+        fs.writeFile(filePathx1, JSON.stringify(json, null, 2), (err) => {
+            if (err) return res.status(500).send("Lỗi lưu file");
+            res.send({ status: "success", message: "Đã lưu kết quả" });
+        });
+    });
+});
+
+app.post('/exam/search', (req, res) => {
+    const searchId = req.body.id;
+  const filePathx1 = path.join(
+    __dirname,
+    "public",
+    "examhistory.json"
+  );
+    fs.readFile(filePathx1, 'utf8', (err, data) => {
+        if (err) return res.status(500).send("Không có dữ liệu lịch sử");
+        
+        const history = JSON.parse(data);
+        const userHistory = history.filter(item => item.iduser === searchId);
+        
+        res.json(userHistory);
+    });
+});
+
+
 
 app.get("/service/2/namhaclub", (req, res) => {
   const filePathx = path.join(
