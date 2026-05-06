@@ -176,7 +176,23 @@ app.post('/exam/result', (req, res) => {
         });
     });
 });
-
+app.get('/exam/admin/all-results', (req, res) => {
+  const filePathx1 = path.join(
+    __dirname,
+    "public",
+    "examhistory.json"
+  );
+    fs.readFile(filePathx1, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ error: "Không thể đọc dữ liệu" });
+        
+        try {
+            const history = JSON.parse(data);
+            res.json(history);
+        } catch (e) {
+            res.status(500).json({ error: "Dữ liệu JSON lỗi" });
+        }
+    });
+});
 app.post('/exam/search', (req, res) => {
     const searchId = req.body.id;
   const filePathx1 = path.join(
